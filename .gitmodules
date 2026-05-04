@@ -1,3 +1,6 @@
 [submodule "hypervisor/bao-hypervisor"]
 	path = hypervisor/bao-hypervisor
 	url = git@github.com:Diogo21Costa/bao-hypervisor.git
+[submodule "hypervisor/bao-run-time-profiler"]
+	path = hypervisor/bao-run-time-profiler
+	url = git@github.com:Diogo21Costa/bao-run-time-profiler.git
