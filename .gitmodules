@@ -4,3 +4,6 @@
 [submodule "hypervisor/bao-run-time-profiler"]
 	path = hypervisor/bao-run-time-profiler
 	url = git@github.com:Diogo21Costa/bao-run-time-profiler.git
+[submodule "DAAT-MCS-results"]
+	path = DAAT-MCS-results
+	url = git@github.com:Diogo21Costa/DAAT-MCS-results.git
