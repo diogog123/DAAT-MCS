@@ -1,0 +1,37 @@
+/media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/build/zcu104/cache_stressor/bandwidth_benchmark/src/baremetal-runtime//src/core/virtio_console.o: \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/virtio_console.c \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/inc/virtio_console.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/lib/gcc/aarch64-none-elf/13.3.1/include/stdint.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/stdint.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/machine/_default_types.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/features.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/_newlib_version.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/_intsup.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/_stdint.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime/src/arch/armv8//aarch64/inc/spinlock.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/inc/core.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/lib/gcc/aarch64-none-elf/13.3.1/include/stddef.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/lib/gcc/aarch64-none-elf/13.3.1/include/stdbool.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/platform/zcu104/inc/plat.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/inc/virtio.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/inc/virtio_queue.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/assert.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/_ansi.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/newlib.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/config.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/machine/ieeefp.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/stdio.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/cdefs.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/lib/gcc/aarch64-none-elf/13.3.1/include/stdarg.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/reent.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/_ansi.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/_types.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/machine/_types.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/lock.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/stdio.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/inc/virtio_memory_pool.h \
+ /media/diogo/linux_rootfs_2/PhD_osyx/performance_profiling/guests/baremetal/src/baremetal-runtime//src/core/inc/virtio_mmio.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/string.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/_locale.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/strings.h \
+ /home/diogo/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-elf/aarch64-none-elf/include/sys/string.h

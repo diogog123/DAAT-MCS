@@ -1,0 +1,59 @@
+paths:
+  root_dir: "."
+  configs_dir: "/configs"
+  config_templates: "/setup_generator/config_templates"
+  bao_dir: "../hypervisor/bao-hypervisor"
+  imgs_dir: "./wrkdir_imgs"
+
+setups:
+  benchmark: "MBR_Preliminary_Results"
+  list_setups: ["solo_baremetal_mbr"]
+
+guests:
+  baremetal_cache_interf:
+    src_dir: "../guests/baremetal"
+    cache_line_size: 64
+    interference_buffer_size: ["1M"]
+    read_write_operation: ["write"]
+    mode: "bandwidth_benchmark"
+    num_cpus: [3]
+    cpu_IDs: [[0,1,2]]
+
+hardware:
+  platform: "zcu104"
+  bitstream:
+
+hypervisor:
+  name: "bao"
+  src_dir: "../hypervisor/bao-hypervisor"
+
+setups_configs:
+  solo_baremetal:
+    guests: ["baremetal_cache_interf"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB1"]
+
+  solo_baremetal_profiling:
+    guests: ["baremetal_cache_interf"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB1"]
+
+  solo_baremetal_mbr:
+    guests: ["baremetal_cache_interf"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB1"]
+    mem_bw_config:
+      baremetal_guest:
+        enabled: true
+        budget: [4000000]
+        period_us: [100000]
+
+  solo_baremetal_mbr_profiling:
+    guests: ["baremetal_cache_interf"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB1"]
+    mem_bw_config:
+      baremetal_guest:
+        enabled: true
+        budget: [1000]
+        period_us: [500000]

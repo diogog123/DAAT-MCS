@@ -1,0 +1,61 @@
+paths:
+  root_dir: "."
+  configs_dir: "/configs"
+  config_templates: "/setup_generator/config_templates"
+  bao_dir: "../hypervisor/bao-hypervisor"
+  imgs_dir: "./wrkdir_imgs"
+
+setups:
+  benchmark: "MiBench_Preliminary_Results"
+  list_setups: ["interf_cache_linux_cc"]
+
+guests:
+  linux:
+    linux_dir: "../guests/linux"
+    build_guest: false
+    rebuild_initrd: true
+    boot_commands:
+      [
+        [
+          "susanc_small",    "cd /root/benchmarks/MiBench/automotive/susan",
+          "seq 10 | xargs -Iz ./runme_small-c.sh", 
+          "perf stat --table -n -r 1000 -e l2d_cache_refill ./runme_small-c.sh"
+        ]
+      ]
+
+  baremetal_cache_interf:
+    src_dir: "../guests/baremetal/baremetal_cache"
+    cache_line_size: 64
+    interference_buffer_size: ["1M"]
+    read_write_operation: ["write"]
+    num_cpus: [3]
+    cpu_IDs: [[1,2,3]]
+
+hardware:
+  platform: "zcu104"
+  bitstream:
+
+hypervisor:
+  name: "bao"
+  src_dir: "../hypervisor/bao-hypervisor"
+
+setups_configs:
+  solo_linux:
+    guests: ["linux"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB2"]
+    
+  interf_cache_linux: 
+    guests: ["linux", "baremetal_cache_interf"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB2", "/dev/ttyUSB1"]
+  
+  interf_cache_linux_cc:
+    guests: ["linux", "baremetal_cache_interf"]
+    en_cache_coloring: true
+    log_ports: ["/dev/ttyUSB2", "/dev/ttyUSB1"]
+    lc_cache_coloring: [
+      ['0x3', '0xfc'], 
+      ['0xf', '0xf0'],  
+      ['0x3f', '0xc0']
+    ]

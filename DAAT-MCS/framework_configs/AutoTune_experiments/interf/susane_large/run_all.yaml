@@ -1,0 +1,81 @@
+paths:
+  root_dir: "."
+  configs_dir: "/configs"
+  config_templates: "/setup_generator/config_templates"
+  imgs_dir: "./wrkdir_imgs"
+
+setups:
+  benchmark: "AutoTune_Experiments"
+  list_setups: ["interf_cache_embench_linux_profiling"]
+
+guests:
+  linux:
+    linux_dir: "../guests/linux"
+    build_guest: false
+    rebuild_initrd: true
+    boot_commands:
+      [
+        ["susane_large",    "cd /root/benchmarks/MiBench/automotive/susan",      "echo \"3 0 0 0\" > /dev/baohypercall0;  for i in $(seq 1 30); do ./runme_large-c.sh; echo \"4 0 0 0\" > /dev/baohypercall0; done; echo \"6 0 0 0\" > /dev/baohypercall0; sleep 4"],
+      ]
+    num_cpus: [1]
+    cpu_IDs: [[2]]
+
+    
+  profiler:
+    profiler_dir: "../guests/profiler"
+    build_guest: false
+    rebuild_initrd: true
+    profiler_configuration:
+      num_target_cpus: 3
+      num_store_buffers: 2
+      store_buffer_size: "16KB"
+
+  baremetal_cache_interf:
+    src_dir: "../guests/baremetal/baremetal_cache_inst"
+    cache_line_size: 64
+    interference_buffer_size: ["1M"]
+    read_write_operation: ["write"]
+    num_cpus: [1]
+    cpu_IDs: [[3]]
+
+  baremetal_embench:
+    src_dir: "../guests/baremetal/baremetal_embench"
+    benchmarks: [
+      "aha-mont64",
+      "crc32",
+      "cubic",
+      "edn",
+      "huffbench",
+      "matmult-int",
+      "md5sum",
+      "minver",
+      "nbody",
+      "nettle-aes",
+      "nettle-sha256",
+      "nsichneu",
+      "picojpeg",
+      "primecount",
+      "qrduino",
+      "sglib-combined",
+      "slre",
+      "st",
+      "statemate",
+      "tarfind",
+      "ud",
+      "wikisort"
+    ]
+    cpu_IDs: [[2]]
+
+hardware:
+  platform: "zcu104"
+  bitstream: 
+
+hypervisor:
+  name: "bao"
+  src_dir: "../hypervisor/bao-hypervisor"
+
+setups_configs:  
+  interf_cache_embench_linux_profiling:
+    guests: ["linux", "baremetal_cache_interf", "baremetal_embench", "profiler"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB2", "/dev/ttyUSB1"]

@@ -1,0 +1,84 @@
+paths:
+  root_dir: "."
+  configs_dir: "/configs"
+  config_templates: "/setup_generator/config_templates"
+  bao_dir: "../hypervisor/bao-hypervisor"
+  imgs_dir: "./wrkdir_imgs"
+
+setups:
+  benchmark: "MiBench_Preliminary_Results"
+  list_setups: ["interf_cache_linux_cc_mbr"]
+
+guests:
+  linux:
+    linux_dir: "/media/diogo/linux_rootfs_2/git_ML4TIMCS/guests/linux"
+    build_guest: false
+    rebuild_initrd: true
+    boot_commands:
+      [
+        # ["susanc_small",    "cd /root/benchmarks/MiBench/automotive/susan",      "echo \"3 0 0 0\" > /dev/baohypercall0;  for i in $(seq 1 30); do ./runme_small-c.sh; echo \"4 0 0 0\" > /dev/baohypercall0; done; echo \"6 0 0 0\" > /dev/baohypercall0; sleep 4"],
+        [
+          "susanc_small",    "cd /root/benchmarks/MiBench/automotive/susan",
+          "seq 10 | xargs -Iz ./runme_small-c.sh", 
+          "perf stat --table -n -r 1000 -e l2d_cache_refill,ext_mem_req,bus_cycles,ld_dep_stall,l2d_cache_wb,stall_sb_full ./runme_small-c.sh"
+        ]
+      ]
+
+  baremetal_cache_interf:
+    src_dir: "../guests/baremetal"
+    cache_line_size: 64
+    interference_buffer_size: ["1M"]
+    read_write_operation: ["write"]
+    mode: "constant_stress"
+    num_cpus: [3]
+    cpu_IDs: [[1,2,3]]
+
+hardware:
+  platform: "zcu104"
+  bitstream:
+  hardware_control:
+    device_ip: "192.168.1.157"
+    email: "diogoandreveigacosta@gmail.com"
+    password: "tapoZCU104"
+
+hypervisor:
+  name: "bao"
+  src_dir: "../hypervisor/bao-hypervisor"
+
+setups_configs:
+  solo_linux:
+    guests: ["linux"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB2"]
+    
+  interf_cache_linux: 
+    guests: ["linux", "baremetal_cache_interf"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB2", "/dev/ttyUSB1"]
+  
+  interf_cache_linux_cc:
+    guests: ["linux", "baremetal_cache_interf"]
+    en_cache_coloring: true
+    log_ports: ["/dev/ttyUSB2", "/dev/ttyUSB1"]
+    lc_cache_coloring: [
+      ['0x3', '0xfc'], 
+      ['0xf', '0xf0'],  
+      ['0x3f', '0xc0']
+    ]
+
+  interf_cache_linux_cc_mbr:
+    guests: ["linux", "baremetal_cache_interf"]
+    en_cache_coloring: true
+    log_ports: ["/dev/ttyUSB2", "/dev/ttyUSB1"]
+    lc_cache_coloring: [
+      # ['0x3', '0xfc'], 
+      # ['0x0f', '0xf0'],  
+      ['0x3f', '0xc0']
+    ]
+    mem_bw_config:
+      baremetal_guest:
+        enabled: true
+        budget: [30000000, 60000000, 90000000, 120000000]
+        # budget: [600000, 300000, 100000, 60000]
+        # budget: [60000000000]
+        period_us: [1000]
