@@ -1,0 +1,3 @@
+[submodule "hypervisor/bao-hypervisor"]
+	path = hypervisor/bao-hypervisor
+	url = git@github.com:Diogo21Costa/bao-hypervisor.git
