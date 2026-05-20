@@ -1,4 +1,3 @@
-
 import yaml
 import math
 import subprocess
@@ -13,7 +12,7 @@ from datetime import datetime
 guests_path = os.path.abspath('./setup_generator/guests')
 sys.path.append(guests_path)
 
-from baremetal import baremetal_cache_guests, baremetal_embench_guests
+from baremetal import baremetal_cache_guests, baremetal_embench_guests, baremetal_cci_guests
 from linux import linux_guests
 from profiler import profiler_guest, build_eth_logger, launch_eth_logger
 
@@ -26,7 +25,6 @@ test_engine_path = os.path.abspath('./setup_generator')
 sys.path.append(test_engine_path)
 from test_engine import test_engine
 from test_logger import test_logger, list_boot_times
-
 
 en_profiler = False
 profiler_events_sets = [ ]
@@ -42,7 +40,6 @@ parser.add_argument(
     help="Skip the build process for the images"
 )
 parser.add_argument(
-    # path to config file
     "--config",
     type=str,
     default="./config.yaml",
@@ -56,16 +53,17 @@ def stylize_done(img, timing):
     return f"\033[9m{img}\033[0m ✅  [{timing['start']} - {timing['end']}] ({timing['duration']})"
 
 def stylize_failed(img):
-    return f"\033[91m{img}\033[0m ❌"  # Red and cross mark
+    return f"\033[91m{img}\033[0m ❌"
 
 def stylize_current(img):
-    return f">>> \033[1m{img}\033[0m ⏳"  # Bold and pointer
+    return f">>> \033[1m{img}\033[0m ⏳"
 
 def read_guests(config):
     default_guests = {}
     guests = config.get("guests", default_guests)
     linux_guests_obj = None
     baremetal_cache_guests_obj = None
+    baremetal_cci_guests_obj = None
     
     if "linux" in guests:
         linux_guests_obj = linux_guests()
@@ -75,14 +73,18 @@ def read_guests(config):
         baremetal_cache_guests_obj = baremetal_cache_guests()
         baremetal_cache_guests_obj.read_config(guests["baremetal_cache_interf"])
 
-    return linux_guests_obj, baremetal_cache_guests_obj
+    if "baremetal_cci" in guests:
+        print("yes")
+        baremetal_cci_guests_obj = baremetal_cci_guests()
+        baremetal_cci_guests_obj.read_config(guests["baremetal_cci"])
+
+    return linux_guests_obj, baremetal_cci_guests_obj
 
 def read_hardware_config(config, root_dir):
     default_hardware = {}
     hardware = config.get("hardware", default_hardware)
     platform_name = hardware.get("platform", "")
 
-    # create a dictionary with the platform names and the corresponding objects
     platforms = {
         "zcu104" : test_platform_zcu104,
     }
@@ -106,7 +108,7 @@ def read_tests_config(config):
     test_engine_obj.read_config(paths, setups, setups_configs, hypervisor_configs, hw_controller)
 
     return test_engine_obj
-
+# VER ESTA FUNÇÃO
 def read_framework_configurations(config):
     linux_guests_obj, baremetal_cache_guests_obj = read_guests(config)
     test_engine_obj = read_tests_config(config)
@@ -121,12 +123,13 @@ def generate_tests(engine_tests, guests_obj, hw_config, list_cache_colors, list_
         include_profiling_vm = True
         setup_name = setup_name.replace("_profiling", "")
 
+    # print(guests_obj)
     engine_tests.generate_tests(guests_obj, hw_config, list_cache_colors, list_mbr_settings, setup_name, include_profiling_vm)
     if not args.skip_build:
         engine_tests.build_tests(hw_config.platform_name, include_profiling_vm)
 
 def print_test_status(img_index, img, list_bao_imgs):
-    sys.stdout.write("\033[2J\033[H")  # Clear screen
+    sys.stdout.write("\033[2J\033[H")
     print("Image Test Progress:\n")
     for j, name in enumerate(list_bao_imgs):
         if name in img_timings:
@@ -194,6 +197,14 @@ def main():
 
             guests_obj["profiler"] = profiler_guests_obj
             en_profiler = True
+            
+        elif guest == "baremetal_cci":
+            baremetal_cci_guests_obj = baremetal_cci_guests()
+            baremetal_cci_guests_obj.read_config(guests["baremetal_cci"])
+            baremetal_cci_guests_obj.get_configurations()
+            if not args.skip_build:
+                baremetal_cci_guests_obj.build_guests(f"{engine_tests.imgs_dir}/guests/{engine_tests.benchmark}", hw_config.platform_name)
+            guests_obj["baremetal_cci"] = baremetal_cci_guests_obj
 
     for setup in engine_tests.list_setups:
         setup_cfg = {}
@@ -202,7 +213,6 @@ def main():
                 setup_cfg = cfg
                 break
         cache_coloring_en = setup_cfg["cache_coloring"]
-
 
         list_cache_colors = []
         setup_guests = setup_cfg["guests"]
@@ -240,17 +250,20 @@ def main():
                     list_log_ports.append(cfg_settings["log_ports"])
                     break
 
-
-    # return 0
-
     test_logger_obj = test_logger(hw_config.master_interface, 115200)
     engine_tests.hardware_reset()
 
+    # Obter o objeto baremetal_cci se existir
+    baremetal_cci_guests_obj = guests_obj.get("baremetal_cci")
+
+    ila_configs = baremetal_cci_guests_obj.ila_configurations if baremetal_cci_guests_obj else []
+
     for i, img in enumerate(list_bao_imgs):
 
+        ila_cfg = ila_configs[i] if i < len(ila_configs) else None
         success = False
         retry_count = 0
-        max_retries = 10  # Set a limit to prevent infinite loops
+        max_retries = 10
 
         while not success and retry_count < max_retries:
             start_time = datetime.now()
@@ -275,18 +288,53 @@ def main():
             print("Starting test for image:", img)
             img_path = f"{engine_tests.imgs_dir}/{engine_tests.hypervisor}/{engine_tests.benchmark}/{engine_tests.list_setups[0]}/{img}"
 
-            hw_config.launch_test(img_path)
+            #hw_config.launch_test(img_path)
 
-            test_logger_obj.event_end_of_test.clear()
-            for serial_port in list_log_ports[i]:
-                test_logger_obj.open_serial_port(serial_port, 115200)
-                serial_port_name = serial_port.replace("/", "_")
-                log_filename = f"{log_output_dir}/log{serial_port_name}.txt"
-                test_logger_obj.set_logger_to_port(serial_port, log_filename)
-                print(f"Logging to: {log_filename}")
+            # test_logger_obj.event_end_of_test.clear()
 
+            # for serial_port in list_log_ports[i]:
+            #     test_logger_obj.open_serial_port(serial_port, 115200)
+            #     serial_port_name = serial_port.replace("/", "_")
+            #     log_filename = f"{log_output_dir}/log{serial_port_name}.txt"
+            #     test_logger_obj.set_logger_to_port(serial_port, log_filename)
+            #     print(f"Logging to: {log_filename}")
 
-            test_completed = test_logger_obj.wait_for_test_end(timeout=60*3)
+            # test_completed = test_logger_obj.wait_for_test_end(timeout=60*3)
+            # test_logger_obj.reset_test_status()
+
+            # APPLY ILA CONFIG (1:1 mapping)
+            if ila_cfg is not None:
+
+                hw_config.set_bitstream(ila_cfg["coherency"])
+                hw_config.launch_test(img_path)
+
+                test_logger_obj.event_end_of_test.clear()
+
+                ila_args = [
+                    str(ila_cfg["snoop_type"]),
+                    str(ila_cfg["channels"]),
+                    ila_cfg["test_type"],
+                    str(ila_cfg["coherency"]),
+                    log_output_dir,
+                    hw_config.ltx_file
+                ]
+
+                print("ILA args:", ila_args)
+
+                test_logger_obj.start_ila_thread(
+                    hw_config.tcl_script,
+                    args=ila_args
+                )
+
+            else:
+                # fallback se não houver config
+                hw_config.launch_test(img_path)
+                test_logger_obj.event_end_of_test.clear()
+
+            print("Waiting for test to end...")
+            test_completed = test_logger_obj.wait_for_test_end(timeout=60 * 10)
+            print("Test Completed!")
+
             test_logger_obj.reset_test_status()
 
             if en_profiler:
@@ -309,7 +357,6 @@ def main():
 
             else:
                 engine_tests.hardware_reset(turn_off_delay=15)
-                # input("Test failed, please reboot hardware and press enter to continue...")
                 retry_count += 1
                 print(f"Test for image {img} failed. Retrying... ({retry_count}/{max_retries})")
 

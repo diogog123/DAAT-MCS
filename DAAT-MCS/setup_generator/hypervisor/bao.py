@@ -41,7 +41,7 @@ class bao:
                 shell=False, 
             )
             # print(result.stdout.decode())
-            self.clean_hypervisor()
+            # self.clean_hypervisor()
         except subprocess.CalledProcessError as e:
             print(f"Error occurred: {e.stderr.decode()}")
 

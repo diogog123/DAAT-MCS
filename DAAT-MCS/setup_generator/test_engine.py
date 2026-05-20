@@ -482,7 +482,7 @@ class test_engine:
                 "\t},\n\n",
             ],
             "vm_list_size": "\t.vmlist_size = ",
-            "vm_list": "\t.vmlist = (struct vm_config[]) {",
+            "vm_list": "\t.vmlist = {",
             "config_name" : "",
             "enable_profiler": enable_profiler,
         }
@@ -821,6 +821,7 @@ class test_engine:
         # Separate guest lists by type
         baremetal_cache_guests = []
         baremetal_embench_guests = []
+        baremetal_cci_guests = []
         linux_guests = []
         profiler_guests = []
 
@@ -828,6 +829,7 @@ class test_engine:
         baremetal_type_map = {
             "baremetal_cache_guests": baremetal_cache_guests,
             "baremetal_embench_guests": baremetal_embench_guests,
+            "baremetal_cci_guests" : baremetal_cci_guests,
         }
 
         for guest_obj in list_guests_obj:
@@ -845,11 +847,12 @@ class test_engine:
 
         # Construct output directory suffix based on baremetal type presence (choose last present type as example)
         baremetal_suffix = ""
-        for typ in ["baremetal_cache_guests", "baremetal_embench_guests"]:
+        for typ in ["baremetal_cache_guests", "baremetal_embench_guests", "baremetal_cci_guests"]:
             if baremetal_type_map[typ]:
                 suffix_map = {
                     "baremetal_cache_guests": "_cache",
                     "baremetal_embench_guests": "_embench",
+                    "baremetal_cci_guests": "_cci"
                 }
                 baremetal_suffix = suffix_map[typ]
                 # out_dir += baremetal_suffix
@@ -873,6 +876,10 @@ class test_engine:
         )
         bm_embench_configs = generate_configs_for_guest_list(
             baremetal_embench_guests,
+            f"{self.root_dir}{self.configs_templates}/guests/baremetal.c"
+        )
+        bm_cci_configs = generate_configs_for_guest_list(
+            baremetal_cci_guests,
             f"{self.root_dir}{self.configs_templates}/guests/baremetal.c"
         )
 
@@ -908,12 +915,14 @@ class test_engine:
             "linux": linux_guest_configs,
             "cache": bm_cache_configs,
             "embench": bm_embench_configs,
+            "cci": bm_cci_configs,
         }
         
         if include_profiler:
             config_groups["profiler"] = profiler_guest_configs
 
         dict_configs, num_vms = self.combine_guests(config_groups)
+        # print(baremetal_cci_guests)
 
         list_configs = self.generate_configs(dict_configs, include_profiler=include_profiler)
 

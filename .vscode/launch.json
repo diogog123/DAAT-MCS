@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python Debugger",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/DAAT-MCS",
+      "console": "integratedTerminal",
+
+      "env": {
+        "CROSS_COMPILE": "/media/diogo/rootfs/bao/arm-gnu-toolchain-14.3.rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf-"
+      },
+
+      "args": [
+        "--config",
+        "framework_configs/CCI_interf_setups/cci_microbenchmarks.yaml",
+        "--skip-build"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+paths:
+  root_dir: "."
+  configs_dir: "/configs"
+  config_templates: "/setup_generator/config_templates"
+  imgs_dir: "./wrkdir_imgs"
+
+setups:
+  benchmark: "CCI_microbenchmarks"
+  list_setups: ["cci_baremetal"]
+
+guests:
+  baremetal_cci:
+    src_dir: "../guests/baremetal/src/baremetal-app/baremetal_CCI"
+    cpu_IDs: [[0], [0,1,2,3]]        # [0]=solo, [1]=dma e dma+fpga
+    ila:
+      test_types: ["TEST_TYPE_SOLO", "TEST_TYPE_DMA", "TEST_TYPE_DMA_FPGA"]
+      snoop_types: [1, 2]
+      channels: [1, 2, 4, 8]
+      coherency: [0, 1]
+
+hardware:
+  platform: "zcu104"
+  bitstreams:
+    - coherency: 0 # non-coherent
+      path: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/bitstreams/bfx.bit"
+      ltx: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/bitstreams/bfx.ltx"
+    - coherency: 1 # coherent
+      path: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/bitstreams/bfx_coherent.bit"
+      ltx: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/bitstreams/bfx_coherent.ltx"
+  tcl_script: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/tcl_script/getwaves.tcl"
+
+hypervisor:
+  name: "bao"
+  src_dir: "/media/diogo/rootfs/CCI_Interference/hypervisor/bao/bao-hypervisor"
+
+setups_configs:
+  cci_baremetal:
+    guests: ["baremetal_cci"]
+    en_cache_coloring: false
+    log_ports: ["/dev/ttyUSB2"]
+
+
+# ou separar as baremetals para o diferente numero de canais oe fazer vários configs ou no mesmo config criar um parametro novo por exemplo "channels" e "Snoop types"  e passar la um array como aqui:
+# interference_buffer_size: ["1M, 512M"]
+# channels : ["0,1,2,4,8"]
+# snoop_type : ["read snoop, write snoop"]

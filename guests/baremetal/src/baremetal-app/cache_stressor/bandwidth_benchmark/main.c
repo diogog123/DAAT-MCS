@@ -27,7 +27,7 @@
 
 /* Benchmark-related configurations */
 #define NUM_CPUS            3
-#define INTERF_BUF_SIZE     0x100000
+#define INTERF_BUF_SIZE     0x80000
 #define ENABLE_READS        0
 #define ENABLE_WRITES       1
 #define IVAC_CACHE        0

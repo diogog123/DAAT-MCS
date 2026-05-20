@@ -283,3 +283,135 @@ class baremetal_embench_guests(baremetal_guests):
             
 
         return dict_guest_config
+    
+class baremetal_cci_guests(baremetal_guests):
+    def __init__(self):
+        super().__init__()
+        self.ila_config = {}
+        self.ila_configurations = []
+
+    def read_config(self, baremetal_cci_config):
+        super().read_config(baremetal_cci_config)
+        self.ila_config = baremetal_cci_config.get("ila", {})
+
+    def get_configurations(self):
+        snoop_types  = self.ila_config.get("snoop_types", [1])
+        channels     = self.ila_config.get("channels", [])
+        test_types   = self.ila_config.get("test_types", ["TEST_TYPE_SOLO"])
+        coherency    = self.ila_config.get("coherency", [0])
+
+        cpu_ids_solo = self.cpu_IDs[0]
+        cpu_ids_dma  = self.cpu_IDs[1]
+
+        for tt in test_types:
+            for snoop in snoop_types:
+                for coh in coherency:
+                    cpu_ids = cpu_ids_solo if tt == "TEST_TYPE_SOLO" else cpu_ids_dma
+                    if tt == "TEST_TYPE_SOLO":
+                        self.ila_configurations.append({
+                            "test_type"  : tt,
+                            "snoop_type" : snoop,
+                            "channels"   : 0,
+                            "coherency"  : coh,
+                            "cpu_IDs"    : cpu_ids,
+                        })
+                    else:
+                        for ch in channels:
+                            self.ila_configurations.append({
+                                "test_type"  : tt,
+                                "snoop_type" : snoop,
+                                "channels"   : ch,
+                                "coherency"  : coh,
+                                "cpu_IDs"    : cpu_ids,
+                            })
+
+    def build_guests(self, out_dir, platform):
+        for ila_cfg in self.ila_configurations:
+            snoop_type = ila_cfg["snoop_type"]
+            channels   = ila_cfg["channels"]
+            test_type  = ila_cfg["test_type"]
+            coherency  = ila_cfg["coherency"]
+            cpu_IDs    = ila_cfg["cpu_IDs"]
+            num_cpus   = len(cpu_IDs)
+
+            c_file_path = f"{self.src_dir}/src/main.c"
+            with open(c_file_path, "r") as f:
+                file_content = f.read()
+
+            file_content = re.sub(
+                r"#define\s+TEST_TYPE\s+\w+",
+                f"#define TEST_TYPE     {test_type}",
+                file_content
+            )
+            file_content = re.sub(
+                r"#define\s+SNOOP_TYPE\s+\d+",
+                f"#define SNOOP_TYPE    {snoop_type}",
+                file_content
+            )
+            file_content = re.sub(
+                r"#define\s+DMA_CHANNELS\s+\d+",
+                f"#define DMA_CHANNELS  {channels}",
+                file_content
+            )
+            file_content = re.sub(
+                r"#define\s+COHERENCY\s+\d+",
+                f"#define COHERENCY     {coherency}",
+                file_content
+            )
+            file_content = re.sub(
+                r"#define\s+NUM_CPUS\s+\d+",
+                f"#define NUM_CPUS      {num_cpus}",
+                file_content
+            )
+
+            with open(c_file_path, "w") as f:
+                f.write(file_content)
+
+            bare_name = f"baremetal_cci_{test_type}_snoop{snoop_type}_ch{channels}_coh{coherency}_C{num_cpus}"
+            command = [
+                "bash", "-c",
+                f"make -C {self.src_dir} NAME={bare_name} PLATFORM={platform}"
+            ]
+            try:
+                subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as e:
+                print(f"Build failed for {bare_name}: {e.stderr.decode()}")
+                continue
+
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+
+            shutil.copyfile(
+                f"{self.src_dir}/build/{platform}/{bare_name}.bin",
+                f"{out_dir}/{bare_name}.bin"
+            )
+
+    def generate_guest_config_files(self, benchmark, template_file, hw_obj=None):
+        template_file_content = ""
+        dict_guest_config = {}
+        with open(template_file, "r") as f:
+            template_file_content = f.read()
+
+        for ila_cfg in self.ila_configurations:
+            guest_config_file = template_file_content
+            cpu_IDs    = ila_cfg["cpu_IDs"]
+            num_cpus   = len(cpu_IDs)
+            snoop_type = ila_cfg["snoop_type"]
+            channels   = ila_cfg["channels"]
+            test_type  = ila_cfg["test_type"]
+            coherency  = ila_cfg["coherency"]
+
+            cpu_affinity = 0
+            for cpu in cpu_IDs:
+                cpu_affinity |= (1 << cpu)
+
+            config_name = f"baremetal_cci_{test_type}_snoop{snoop_type}_ch{channels}_coh{coherency}_C{num_cpus}"
+            image_name  = config_name
+
+            new_file_content = self.genertate_config_file_content(
+                guest_config_file, config_name, image_name, benchmark, cpu_affinity, num_cpus
+            )
+            dict_guest_config[config_name] = new_file_content
+        print("ola")
+        print(dict_guest_config)
+        return dict_guest_config

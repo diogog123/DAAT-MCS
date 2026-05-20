@@ -1,6 +1,7 @@
 import threading
 import serial
 import time
+import subprocess
 
 list_boot_times = []
 
@@ -157,7 +158,34 @@ class test_logger:
             if thread.is_alive():
                 self.event_end_of_test.set()
                 break
-        return self.test_completed
+        return self.test_completed  
+    
+    def start_ila_thread(self, tcl_script_path, args=None):
+        def run_tcl():
+            tclargs = " ".join(args) if args else ""
+            cmd = [
+                "bash", "-c",
+                f"source /home/diogo/VIVADO/Vivado/2024.1/settings64.sh && "
+                f"vivado -mode batch -source {tcl_script_path} -tclargs {tclargs}"
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                self.test_completed = True
+            else:
+                print(f"Erro ILA: {result.stderr}")
+                self.test_completed = False
+            
+            self.event_end_of_test.set()
+
+        ila_thread = threading.Thread(target=run_tcl)
+        ila_thread.start()
+        self.log_threads.append(ila_thread)
+        
     
     def reset_test_status(self):
         self.test_completed = False

@@ -13,7 +13,7 @@ guests:
   baremetal_cache_interf:
     src_dir: "../guests/baremetal"
     cache_line_size: 64
-    interference_buffer_size: ["1M"]
+    interference_buffer_size: ["1M", "512K"]
     read_write_operation: ["write"]
     mode: "bandwidth_benchmark"
     num_cpus: [3]

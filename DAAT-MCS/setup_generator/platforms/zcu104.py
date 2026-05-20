@@ -17,7 +17,7 @@ class test_platform_zcu104:
         log_ports = {}
         self.pmu = pmu()
         self.platform_launch_cfgs = {
-            "tcl_script" : f"{root_dir}/setup_generator/platforms/zcu104/scripts/reset_zcu104.tcl",
+            "tcl_script" : "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/tcl_script/flash_zcu104.tcl",
             "firmware_path" : f"{root_dir}/setup_generator/platforms/zcu104/firmware",
             "bitstream" : "",
         }
@@ -45,10 +45,10 @@ class test_platform_zcu104:
         command = [
         "bash", "-c",
         f"""
+        source /home/diogo/VIVADO/Vivado/2024.1/settings64.sh && \
         export TCL_FILE={self.platform_launch_cfgs["tcl_script"]} && \
-        export FW_PATH={self.platform_launch_cfgs["firmware_path"]} && \
         export BITSTREAM={self.platform_launch_cfgs["bitstream"]} && \
-        xsct $TCL_FILE $FW_PATH $BITSTREAM
+        xsct $TCL_FILE $BITSTREAM
         """
     ]
         try:
@@ -58,5 +58,35 @@ class test_platform_zcu104:
             print(f"Error occurred: {e.stderr.decode()}")
 
     def read_hardware_config(self, config):
-        bitstream = config.get("bitstream", "")
-        self.platform_launch_cfgs["bitstream"] = bitstream if bitstream is not None else ""
+        bitstreams = config.get("bitstreams", [])
+        tcl_script = config.get("tcl_script", "")
+
+        if bitstreams:
+            self.bitstreams = {b["coherency"]: {"path": b["path"], "ltx": b["ltx"]} for b in bitstreams}
+            self.platform_launch_cfgs["bitstream"] = bitstreams[0]["path"]
+        else:
+            bitstream = config.get("bitstream", "")
+            self.bitstreams = {}
+            self.platform_launch_cfgs["bitstream"] = bitstream if bitstream is not None else ""
+
+        self.tcl_script = tcl_script
+        self.ltx_file = ""
+
+    def set_bitstream(self, coherency):
+        if coherency in self.bitstreams:
+            self.platform_launch_cfgs["bitstream"] = self.bitstreams[coherency]["path"]
+            self.ltx_file = self.bitstreams[coherency]["ltx"]
+        else:
+            print(f"Warning: no bitstream found for coherency={coherency}")
+
+
+# command = [
+#         "bash", "-c",
+#         f"""
+#         source /home/diogo/VIVADO/Vivado/2024.1/settings64.sh && \
+#         export TCL_FILE={self.platform_launch_cfgs["tcl_script"]} && \
+#         export FW_PATH={self.platform_launch_cfgs["firmware_path"]} && \
+#         export BITSTREAM={self.platform_launch_cfgs["bitstream"]} && \
+#         xsct $TCL_FILE $FW_PATH $BITSTREAM
+#         """
+#     ]

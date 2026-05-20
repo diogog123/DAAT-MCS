@@ -55,6 +55,11 @@ bmg_dir := $(ROOT_DIR)/src/baremetal-app/$(APP)
 include $(bmg_dir)/setup.mk
 endif
 
+ifeq ($(APP),baremetal_CCI)
+bmg_dir := $(ROOT_DIR)/src/baremetal-app/$(APP)
+include $(bmg_dir)/setup.mk
+endif
+
 # Include the final baremetal-runtime build
 include $(bmrt_dir)/build.mk
 
