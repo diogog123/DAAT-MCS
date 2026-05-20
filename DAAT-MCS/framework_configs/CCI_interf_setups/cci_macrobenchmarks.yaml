@@ -5,8 +5,8 @@ paths:
   imgs_dir: "./wrkdir_imgs"
 
 setups:
-  benchmark: "CCI_microbenchmarks"
-  list_setups: ["cci_baremetal"]
+  benchmark: "CCI_macrobenchmarks"
+  list_setups: ["cci_baremetal_linux"]
 
 guests:
   baremetal_cci:
@@ -16,7 +16,18 @@ guests:
       test_types: ["TEST_TYPE_SOLO", "TEST_TYPE_DMA", "TEST_TYPE_DMA_FPGA"]
       snoop_types: [1, 2]
       channels: [1, 2, 4, 8]
-      coherency: [0, 1]
+      coherency: [0, 1]  
+  
+  linux_cci:
+    linux_dir: ""
+    build_guest: false
+    rebuild_initrd: true
+    boot_commands:
+      [
+        [
+          
+        ]
+      ]
 
 hardware:
   platform: "zcu104"
@@ -35,14 +46,6 @@ hypervisor:
 
 setups_configs:
   cci_baremetal:
-    guests: ["baremetal_cci"]
+    guests: ["baremetal_cci","linux_cci"]
     en_cache_coloring: false
-    log_ports: ["/dev/ttyUSB2"]
-
-
-# TODO: improve some names and the way we present the parameters on the hardware
-      # on guests change the snoop types from numbers to names as well the coherency
-      # change also the name ila to other name
-      # after take the csvs automatize the rest like the q95 , q99 and the graphs 
-      # make the macrobenchmarks yaml , on the linux guest put the commands to take respective benchmarks (MiBench)
-      # change whatever we need on the framework to implement the previous point
+    log_ports: ["/dev/ttyUSB2","/dev/ttyUSB2"]
