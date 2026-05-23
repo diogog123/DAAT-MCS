@@ -18,16 +18,28 @@ guests:
       channels: [1, 2, 4, 8]
       coherency: [0, 1]  
   
-  linux_cci:
-    linux_dir: ""
-    build_guest: false
-    rebuild_initrd: true
-    boot_commands:
+linux:
+  linux_dir: "/home/diogo/Downloads/DAAT-MCS-main/guests/linux"
+  build_guest: false
+  rebuild_initrd: true
+  boot_commands:
+    [
       [
-        [
-          
-        ]
+        "cci_macrobenchmark",
+        "cd /root/benchmarks/MiBench/MiBench/automotive/qsort",
+        "seq 10 | xargs -Iz ./runme_small.sh",
+        "seq 10 | xargs -Iz ./runme_large.sh",
+        "cd /root/benchmarks/MiBench/MiBench/automotive/susan",
+        "seq 10 | xargs -Iz ./runme_small.sh",
+        "seq 10 | xargs -Iz ./runme_large.sh",
+        "cd /root/benchmarks/MiBench/MiBench/automotive/bitcount",
+        "seq 10 | xargs -Iz ./runme_small.sh",
+        "seq 10 | xargs -Iz ./runme_large.sh",
+        "cd /root/benchmarks/MiBench/MiBench/automotive/basicmath",
+        "seq 10 | xargs -Iz ./runme_small.sh",
+        "seq 10 | xargs -Iz ./runme_large.sh"
       ]
+    ]
 
 hardware:
   platform: "zcu104"
@@ -45,7 +57,7 @@ hypervisor:
   src_dir: "/media/diogo/rootfs/CCI_Interference/hypervisor/bao/bao-hypervisor"
 
 setups_configs:
-  cci_baremetal:
-    guests: ["baremetal_cci","linux_cci"]
+  cci_baremetal_linux:
+    guests: ["baremetal_cci","linux"]
     en_cache_coloring: false
-    log_ports: ["/dev/ttyUSB2","/dev/ttyUSB2"]
+    log_ports: ["/dev/ttyUSB1","/dev/ttyUSB2"]

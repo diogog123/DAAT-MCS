@@ -288,54 +288,54 @@ def main():
             print("Starting test for image:", img)
             img_path = f"{engine_tests.imgs_dir}/{engine_tests.hypervisor}/{engine_tests.benchmark}/{engine_tests.list_setups[0]}/{img}"
 
-            #hw_config.launch_test(img_path)
+            hw_config.launch_test(img_path)
 
-            # test_logger_obj.event_end_of_test.clear()
+            test_logger_obj.event_end_of_test.clear()
 
-            # for serial_port in list_log_ports[i]:
-            #     test_logger_obj.open_serial_port(serial_port, 115200)
-            #     serial_port_name = serial_port.replace("/", "_")
-            #     log_filename = f"{log_output_dir}/log{serial_port_name}.txt"
-            #     test_logger_obj.set_logger_to_port(serial_port, log_filename)
-            #     print(f"Logging to: {log_filename}")
-
-            # test_completed = test_logger_obj.wait_for_test_end(timeout=60*3)
-            # test_logger_obj.reset_test_status()
-
-            # APPLY ILA CONFIG (1:1 mapping)
-            if ila_cfg is not None:
-
-                hw_config.set_bitstream(ila_cfg["coherency"])
-                hw_config.launch_test(img_path)
-
-                test_logger_obj.event_end_of_test.clear()
-
-                ila_args = [
-                    str(ila_cfg["snoop_type"]),
-                    str(ila_cfg["channels"]),
-                    ila_cfg["test_type"],
-                    str(ila_cfg["coherency"]),
-                    log_output_dir,
-                    hw_config.ltx_file
-                ]
-
-                print("ILA args:", ila_args)
-
-                test_logger_obj.start_ila_thread(
-                    hw_config.tcl_script,
-                    args=ila_args
-                )
-
-            else:
-                # fallback se não houver config
-                hw_config.launch_test(img_path)
-                test_logger_obj.event_end_of_test.clear()
+            for serial_port in list_log_ports[i]:
+                test_logger_obj.open_serial_port(serial_port, 115200)
+                serial_port_name = serial_port.replace("/", "_")
+                log_filename = f"{log_output_dir}/log{serial_port_name}.txt"
+                test_logger_obj.set_logger_to_port(serial_port, log_filename)
+                print(f"Logging to: {log_filename}")
 
             print("Waiting for test to end...")
-            test_completed = test_logger_obj.wait_for_test_end(timeout=60 * 10)
+            test_completed = test_logger_obj.wait_for_test_end(timeout=60*3)
             print("Test Completed!")
-
             test_logger_obj.reset_test_status()
+
+            # if ila_cfg is not None:
+
+            #     hw_config.set_bitstream(ila_cfg["coherency"])
+            #     print(hw_config.platform_launch_cfgs["bitstream"])
+            #     hw_config.launch_test(img_path)
+
+            #     test_logger_obj.event_end_of_test.clear()
+
+            #     ila_args = [
+            #         str(ila_cfg["snoop_type"]),
+            #         str(ila_cfg["channels"]),
+            #         ila_cfg["test_type"],
+            #         str(ila_cfg["coherency"]),
+            #         log_output_dir,
+            #         hw_config.ltx_file
+            #     ]
+
+            #     print("ILA args:", ila_args)
+
+            #     test_logger_obj.start_ila_thread(
+            #         hw_config.tcl_script,
+            #         args=ila_args
+            #     )
+
+            # else:
+            #     hw_config.launch_test(img_path)
+            #     test_logger_obj.event_end_of_test.clear()
+
+            # print("Waiting for test to end...")
+            # test_completed = test_logger_obj.wait_for_test_end(timeout=60 * 10)
+            # print("Test Completed!")
+            # test_logger_obj.reset_test_status()
 
             if en_profiler:
                 eth_profiler_process.terminate()

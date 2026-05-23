@@ -43,6 +43,6 @@ setups_configs:
 # TODO: improve some names and the way we present the parameters on the hardware
       # on guests change the snoop types from numbers to names as well the coherency
       # change also the name ila to other name
-      # after take the csvs automatize the rest like the q95 , q99 and the graphs 
-      # make the macrobenchmarks yaml , on the linux guest put the commands to take respective benchmarks (MiBench)
-      # change whatever we need on the framework to implement the previous point
+      # after take the csvs automatize the rest like the q95 , q99 and the graphs (feito)
+      # make the macrobenchmarks yaml , on the linux guest put the commands to take respective benchmarks (MiBench) (feito)
+      # change whatever we need on the framework to implement the previous point (feito)

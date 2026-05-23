@@ -255,10 +255,10 @@ volatile size_t sample_count = 0;
 size_t i = 0;
 
 static const struct cci_counters_cfg config [] = {  /* Choose here your event , interface  and counter (check cci400_events.h) */ 
-    {si_rrq_hs_any, 2 ,0},
+    {si_r_data_last_hs_snoop, 0 ,0},
     {si_r_data_last_hs_snoop, 2, 1},
-    {si_rrq_hs_inner_or_outershareable, 2, 2},
-    {si_wrq_hs_any, 2, 3},
+    {si_rrq_hs_inner_or_outershareable, 0, 2},
+    {si_rrq_hs_inner_or_outershareable, 2, 3},
   
 }; /* YOU CAN ONLY MEASURE 4 EVENTS AT TIME BECAUSE WE ONLY HAD 4 COUNTERS */
 
@@ -379,15 +379,16 @@ void flush_single_address(void *addr) {
 
 void timer_handler(unsigned id){
 
-    printf("si_rrq_hs_any_handler: %u\n",pmu_cci_counter_get(0));
-    printf("si_r_data_last_hs_snoop_handler: %u\n",pmu_cci_counter_get(1));
-    printf("si_rrq_hs_inner_or_outershareable_handler: %u\n",pmu_cci_counter_get(2));
-    printf("si_wrq_hs_any_handler: %u\n",pmu_cci_counter_get(3));
+    printf("si_r_data_last_hs_snoop_handler_s0: %u\n",pmu_cci_counter_get(0));
+    printf("si_r_data_last_hs_snoop_handler_s2: %u\n",pmu_cci_counter_get(1));
+    printf("si_rrq_hs_inner_or_outershareable_handler_s0: %u\n",pmu_cci_counter_get(2));
+    printf("si_rrq_hs_inner_or_outershareable_handler_s2: %u\n",pmu_cci_counter_get(3));
     printf("Core states: 0=%s 1=%s 2=%s 3=%s\n",
         core_state[0] ? "RUN" : "WFI",
         core_state[1] ? "RUN" : "WFI",
         core_state[2] ? "RUN" : "WFI",
         core_state[3] ? "RUN" : "WFI");
+    timer_set(TIME_S(1));
 }
 
 void main(void){
@@ -396,10 +397,10 @@ void main(void){
 
     if(cpu_is_master()){
         printf("\nCCI Interference tests!\n");
-        irq_set_handler(TIMER_IRQ_ID, timer_handler);
-        timer_set(TIME_S(1));
-        irq_enable(TIMER_IRQ_ID);
-        irq_set_prio(TIMER_IRQ_ID, 0);
+        // irq_set_handler(TIMER_IRQ_ID, timer_handler);
+        // timer_set(TIME_S(1));
+        // irq_enable(TIMER_IRQ_ID);
+        // irq_set_prio(TIMER_IRQ_ID, 0);
         const dma_transaction_t *txn;
         #if SNOOP_TYPE == 1
             printf("Read Snoop!\n");
@@ -411,12 +412,12 @@ void main(void){
 
         for (int i=0; i<16; i++) *(ptr + i) = i;
 
-        printf("[CCI] Configuring CCI PMU counters...\n");
-        if(cci_setup_counters(config, 4) == -1) return;
+        // printf("[CCI] Configuring CCI PMU counters...\n");
+        // if(cci_setup_counters(config, 4) == -1) return;
 
-        printf("[CCI] Starting CCI PMU...\n");
-        cci_pmu_start();
-        printf("[CCI] PMU started.\n");
+        // printf("[CCI] Starting CCI PMU...\n");
+        // cci_pmu_start();
+        // printf("[CCI] PMU started.\n");
 
         #if TEST_TYPE == TEST_TYPE_SOLO
             printf("TEST_TYPE_SOLO\n");
@@ -467,13 +468,13 @@ void main(void){
         #elif COHERENCY == 1
             printf("COHERENT\n");
             #if TEST_TYPE == TEST_TYPE_DMA || TEST_TYPE == TEST_TYPE_DMA_FPGA
-            for(int ch = 0; ch < DMA_channels; ch++){
-                zdma_ch_set_coherent(dma_channels[ch]);
-            }
+                for(int ch = 0; ch < DMA_channels; ch++){
+                    zdma_ch_set_coherent(dma_channels[ch]);
+                }
             #endif
         #endif
         
-        timer_enable();
+        //timer_enable();
         master_done = true;
     }
 

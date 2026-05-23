@@ -1,4 +1,4 @@
-set num_runs 10
+set num_runs 101
 
 # ─── Argumentos ───────────────────────────────────────────
 # Usage: vivado -mode batch -source getwaves.tcl -tclargs <1|2> <channels> <test_type> <coherency> <output_base> <ltx_file>
