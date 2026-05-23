@@ -1,0 +1,21 @@
+# Ignorar as pastas de build compiladas (nunca deves enviar binários para o git)
+build/
+bin/
+obj/
+
+# Ignorar ficheiros de objetos e executáveis específicos
+*.o
+*.out
+*.elf
+*.bin
+*.csv
+
+# Ficheiros ocultos do sistema operativo ou do editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Ficheiros de log ou temporários
+*.log
+*.tmp
