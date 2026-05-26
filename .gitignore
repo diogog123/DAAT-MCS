@@ -9,6 +9,7 @@ obj/
 *.elf
 *.bin
 *.csv
+*.txt
 
 # Ficheiros ocultos do sistema operativo ou do editor
 .DS_Store
