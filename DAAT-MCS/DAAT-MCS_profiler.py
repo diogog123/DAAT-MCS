@@ -353,6 +353,7 @@ def main():
                     "duration": duration
                 }
                 completed_imgs.append(img)
+                engine_tests.hardware_reset(turn_off_delay=3)
                 success = True
 
             else:

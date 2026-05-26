@@ -36,7 +36,7 @@
 #define L1_BUFFER             (0x00004000) //16Kb
 #define BUF_SIZE              L1_BUFFER
 
-#define NUM_CPUS      4
+#define NUM_CPUS      3
 #define MAX_DMA_CH    8
 #define DMA_BASE_ADDRESS      0x00FFA80000
 #define DMA_TRANSFER_SIZE     32 
@@ -368,8 +368,8 @@ void fpga_dma_init(void){
 void fpga_dma_en(void){
     
     core_state[0] = 1;
-    if((cdma->CDMASR & (1U << IDLE)))
-        WRITE_FIELD(cdma->BTT,BTT_MASK,BTT_SHIFT,DMA_SIZE);
+    while(!(cdma->CDMASR & (1U << IDLE)));
+    WRITE_FIELD(cdma->BTT, BTT_MASK, BTT_SHIFT, DMA_SIZE);
 }
 
 void flush_single_address(void *addr) {
@@ -425,7 +425,7 @@ void main(void){
             DMA_channels = DMA_CHANNELS;
             printf("TEST_TYPE_DMA\n");
             printf("%d DMA Channel(s) Interference\n", DMA_channels);
-            assign_zdma_channels(0);
+            assign_zdma_channels(0); // ATENÇAO A ISTO QUANDO VOLTAR A FAZER OS MICROBENCHMARKS
             dma_interf_init();
 
             for (int ch = 0; ch < DMA_channels; ch++) {
@@ -439,7 +439,7 @@ void main(void){
             DMA_channels = DMA_CHANNELS;
             printf("TEST_TYPE_DMA_FPGA\n");
             printf("%d DMA Channel(s) Interference\n", DMA_channels);
-            assign_zdma_channels(1);
+            assign_zdma_channels(1);  // ATENÇAO A ISTO QUANDO VOLTAR A FAZER OS MICROBENCHMARKS
             dma_interf_init();
 
             for (int ch = 0; ch < DMA_channels; ch++) {
@@ -475,6 +475,7 @@ void main(void){
         #endif
         
         //timer_enable();
+        asm volatile("dsb sy" ::: "memory");
         master_done = true;
     }
 

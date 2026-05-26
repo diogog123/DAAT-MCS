@@ -10,6 +10,8 @@ import itertools
 from itertools import product
 from PyP100 import PyP110
 import time
+import asyncio
+from tapo import ApiClient
 
 hypervisor_path = os.path.abspath('./setup_generator/hypervisor')
 print(hypervisor_path)
@@ -960,30 +962,98 @@ class test_engine:
 
 
 
-    def hardware_reset(self, turn_off_delay=3):
-        if self.hardware_control_en == False:
-            print("Warning: Hardware control is disabled")
-            return
+    # def hardware_reset(self, turn_off_delay=3):
+    #     if self.hardware_control_en == False:
+    #         print("Warning: Hardware control is disabled")
+    #         return
         
-        p110 = PyP110.P110(
-            self.hardware_control_cfg["device_ip"],
-            self.hardware_control_cfg["email"],
-            self.hardware_control_cfg["password"]
+    #     p110 = PyP110.P110(
+    #         self.hardware_control_cfg["device_ip"],
+    #         self.hardware_control_cfg["email"],
+    #         self.hardware_control_cfg["password"]
+    #     )
+
+    #     p110.handshake()
+    #     p110.login()
+
+    #     p110.turnOff()
+    #     time.sleep(turn_off_delay)
+    #     p110.turnOn()
+
+    # def hardware_turn_off(self):
+    #     if self.hardware_control_en == False:
+    #         print("Warning: Hardware control is disabled")
+    #         return
+    
+    #     p110 = PyP110.P110(
+    #         self.hardware_control_cfg["device_ip"],
+    #         self.hardware_control_cfg["email"],
+    #         self.hardware_control_cfg["password"]
+    #     )
+
+    #     p110.handshake()
+    #     p110.login()
+
+    #     p110.turnOff()
+
+
+
+    async def _get_device(self):
+        """
+        Cache client + device to avoid repeated cloud handshakes (IMPORTANT for 403 issues)
+        """
+        if not hasattr(self, "tapo_client"):
+            self.tapo_client = ApiClient(
+                self.hardware_control_cfg["email"],
+                self.hardware_control_cfg["password"]
+            )
+
+        return await self.tapo_client.p110(
+            self.hardware_control_cfg["device_ip"]
         )
 
-        p110.turnOff()
-        time.sleep(turn_off_delay)
-        p110.turnOn()
+
+    async def _toggle_power(self, turn_off_delay=3, turn_on=True, retries=5):
+
+        for attempt in range(retries):
+            try:
+                device = await self._get_device()
+
+                # OFF phase
+                await device.off()
+                await asyncio.sleep(turn_off_delay)
+
+                # ON phase (optional)
+                if turn_on:
+                    await device.on()
+                    await asyncio.sleep(10)  # stabilization after power cycle
+
+                return  # success
+
+            except Exception as e:
+                print(f"[Tapo] Attempt {attempt+1}/{retries} failed: {e}")
+
+                # exponential backoff reduces 403 Forbidden risk
+                await asyncio.sleep(min(30, 2 ** attempt))
+
+                # force refresh client on failure (important for invalid handshake states)
+                if hasattr(self, "tapo_client"):
+                    del self.tapo_client
+
+        raise RuntimeError("Failed to toggle power after multiple retries")
+
+
+    def hardware_reset(self, turn_off_delay=3):
+        if not self.hardware_control_en:
+            print("Warning: Hardware control is disabled")
+            return
+
+        asyncio.run(self._toggle_power(turn_off_delay, turn_on=True))
+
 
     def hardware_turn_off(self):
-        if self.hardware_control_en == False:
+        if not self.hardware_control_en:
             print("Warning: Hardware control is disabled")
             return
-    
-        p110 = PyP110.P110(
-            self.hardware_control_cfg["device_ip"],
-            self.hardware_control_cfg["email"],
-            self.hardware_control_cfg["password"]
-        )
 
-        p110.turnOff()
+        asyncio.run(self._toggle_power(turn_off_delay=0, turn_on=False))

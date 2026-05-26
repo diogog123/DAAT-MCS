@@ -11,35 +11,25 @@ setups:
 guests:
   baremetal_cci:
     src_dir: "../guests/baremetal/src/baremetal-app/baremetal_CCI"
-    cpu_IDs: [[0], [0,1,2,3]]        
+    cpu_IDs: [[1], [1,2,3]]        
     ila:
       test_types: ["TEST_TYPE_SOLO", "TEST_TYPE_DMA", "TEST_TYPE_DMA_FPGA"]
       snoop_types: [1, 2]
       channels: [1, 2, 4, 8]
       coherency: [0, 1]  
   
-linux:
-  linux_dir: "/home/diogo/Downloads/DAAT-MCS-main/guests/linux"
-  build_guest: false
-  rebuild_initrd: true
-  boot_commands:
-    [
+  linux:
+    linux_dir: "/home/diogo/Downloads/DAAT-MCS-main/guests/linux"
+    build_guest: false
+    rebuild_initrd: true
+    boot_commands:
       [
-        "cci_macrobenchmark",
-        "cd /root/benchmarks/MiBench/MiBench/automotive/qsort",
-        "seq 10 | xargs -Iz ./runme_small.sh",
-        "seq 10 | xargs -Iz ./runme_large.sh",
-        "cd /root/benchmarks/MiBench/MiBench/automotive/susan",
-        "seq 10 | xargs -Iz ./runme_small.sh",
-        "seq 10 | xargs -Iz ./runme_large.sh",
-        "cd /root/benchmarks/MiBench/MiBench/automotive/bitcount",
-        "seq 10 | xargs -Iz ./runme_small.sh",
-        "seq 10 | xargs -Iz ./runme_large.sh",
-        "cd /root/benchmarks/MiBench/MiBench/automotive/basicmath",
-        "seq 10 | xargs -Iz ./runme_small.sh",
-        "seq 10 | xargs -Iz ./runme_large.sh"
+        [
+          "cci_macrobenchmark",
+          "cd /root/benchmarks/MiBench",
+          "./run_all_mibench.sh"
+        ]
       ]
-    ]
 
 hardware:
   platform: "zcu104"
@@ -51,6 +41,10 @@ hardware:
       path: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/bitstreams/bfx_coherent.bit"
       ltx: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/bitstreams/bfx_coherent.ltx"
   tcl_script: "/media/diogo/rootfs/CCI_Interference/DAAT-MCS/tcl_script/getwaves.tcl"
+  hardware_control:
+    device_ip: "192.168.0.102"
+    email: "pg57856@uminho.pt"
+    password: "kanvec-2warxo-Qawtod"
 
 hypervisor:
   name: "bao"
